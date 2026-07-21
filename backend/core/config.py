@@ -20,11 +20,9 @@ class Settings(BaseSettings):
     app_name: str = "AI Research Assistant"
     api_prefix: str = "/api"
 
-    # CORS - the Vite dev server default
     cors_origins: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:5173",
-            "https://ai-research-assistant-platform-4qkq.vercel.app",
         ]
     )
 
