@@ -21,7 +21,12 @@ class Settings(BaseSettings):
     api_prefix: str = "/api"
 
     # CORS - the Vite dev server default
-    cors_origins: list[str] = Field(default=["http://localhost:5173"])
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:5173",
+            "https://ai-research-assistant-platform-4qkq.vercel.app",
+        ]
+    )
 
     # OpenAI
     openai_api_key: str | None = None
