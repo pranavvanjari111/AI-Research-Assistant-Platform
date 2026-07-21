@@ -10,7 +10,7 @@ import type {
   User,
 } from "@/types";
 
-const BASE_URL = "/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 const TOKEN_STORAGE_KEY = "ara_access_token";
 
 export function getToken(): string | null {
@@ -30,7 +30,10 @@ function authHeaders(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function parseErrorDetail(res: Response, fallback: string): Promise<string> {
+async function parseErrorDetail(
+  res: Response,
+  fallback: string,
+): Promise<string> {
   try {
     const body = await res.json();
     return typeof body.detail === "string" ? body.detail : fallback;
@@ -53,7 +56,11 @@ export interface AuthResult {
   user: User;
 }
 
-export async function register(name: string, email: string, password: string): Promise<AuthResult> {
+export async function register(
+  name: string,
+  email: string,
+  password: string,
+): Promise<AuthResult> {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -66,7 +73,10 @@ export async function register(name: string, email: string, password: string): P
   return { token: data.access_token, user: mapUser(data.user) };
 }
 
-export async function login(email: string, password: string): Promise<AuthResult> {
+export async function login(
+  email: string,
+  password: string,
+): Promise<AuthResult> {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -89,7 +99,9 @@ export async function demoLogin(): Promise<AuthResult> {
 }
 
 export async function fetchMe(): Promise<User> {
-  const res = await fetch(`${BASE_URL}/auth/me`, { headers: { ...authHeaders() } });
+  const res = await fetch(`${BASE_URL}/auth/me`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) {
     throw new Error(await parseErrorDetail(res, "Failed to load account"));
   }
@@ -97,7 +109,9 @@ export async function fetchMe(): Promise<User> {
 }
 
 export async function getChatLimits(): Promise<ChatLimits> {
-  const res = await fetch(`${BASE_URL}/conversations/limits`, { headers: { ...authHeaders() } });
+  const res = await fetch(`${BASE_URL}/conversations/limits`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) {
     throw new Error(await parseErrorDetail(res, "Failed to load chat limits"));
   }
@@ -110,9 +124,13 @@ export async function getChatLimits(): Promise<ChatLimits> {
 }
 
 export async function getConversations(): Promise<Conversation[]> {
-  const res = await fetch(`${BASE_URL}/conversations`, { headers: { ...authHeaders() } });
+  const res = await fetch(`${BASE_URL}/conversations`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) {
-    throw new Error(await parseErrorDetail(res, "Failed to load conversations"));
+    throw new Error(
+      await parseErrorDetail(res, "Failed to load conversations"),
+    );
   }
   const data = await res.json();
   return (data as Record<string, unknown>[]).map((c) => ({
@@ -124,10 +142,15 @@ export async function getConversations(): Promise<Conversation[]> {
   }));
 }
 
-export async function getConversationMessages(conversationId: string): Promise<ChatMessageType[]> {
-  const res = await fetch(`${BASE_URL}/conversations/${encodeURIComponent(conversationId)}/messages`, {
-    headers: { ...authHeaders() },
-  });
+export async function getConversationMessages(
+  conversationId: string,
+): Promise<ChatMessageType[]> {
+  const res = await fetch(
+    `${BASE_URL}/conversations/${encodeURIComponent(conversationId)}/messages`,
+    {
+      headers: { ...authHeaders() },
+    },
+  );
   if (!res.ok) {
     throw new Error(await parseErrorDetail(res, "Failed to load messages"));
   }
@@ -136,19 +159,31 @@ export async function getConversationMessages(conversationId: string): Promise<C
     id: String(m.id),
     role: (m.role as ChatMessageType["role"]) ?? "assistant",
     content: String(m.content ?? ""),
-    sources: Array.isArray(m.sources) && m.sources.length ? mapSources(m.sources as unknown[]) : undefined,
-    evaluation: m.evaluation ? mapEvaluation(m.evaluation as Record<string, unknown>) : undefined,
+    sources:
+      Array.isArray(m.sources) && m.sources.length
+        ? mapSources(m.sources as unknown[])
+        : undefined,
+    evaluation: m.evaluation
+      ? mapEvaluation(m.evaluation as Record<string, unknown>)
+      : undefined,
     createdAt: String(m.created_at),
   }));
 }
 
-export async function deleteConversation(conversationId: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/conversations/${encodeURIComponent(conversationId)}`, {
-    method: "DELETE",
-    headers: { ...authHeaders() },
-  });
+export async function deleteConversation(
+  conversationId: string,
+): Promise<void> {
+  const res = await fetch(
+    `${BASE_URL}/conversations/${encodeURIComponent(conversationId)}`,
+    {
+      method: "DELETE",
+      headers: { ...authHeaders() },
+    },
+  );
   if (!res.ok && res.status !== 204) {
-    throw new Error(await parseErrorDetail(res, "Failed to delete conversation"));
+    throw new Error(
+      await parseErrorDetail(res, "Failed to delete conversation"),
+    );
   }
 }
 
@@ -192,13 +227,17 @@ export async function streamChat(
   conversationId: string | null,
   config: AppConfig,
   handlers: ChatStreamHandlers,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) {
   try {
     const res = await fetch(`${BASE_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ message, conversation_id: conversationId, config }),
+      body: JSON.stringify({
+        message,
+        conversation_id: conversationId,
+        config,
+      }),
       signal,
     });
 
@@ -211,7 +250,12 @@ export async function streamChat(
     }
 
     if (!res.ok || !res.body) {
-      throw new Error(await parseErrorDetail(res, `Chat request failed with status ${res.status}`));
+      throw new Error(
+        await parseErrorDetail(
+          res,
+          `Chat request failed with status ${res.status}`,
+        ),
+      );
     }
 
     const reader = res.body.getReader();
@@ -260,7 +304,7 @@ export async function streamChat(
 
 export async function uploadDocument(
   file: File,
-  onProgress?: (status: DocumentItem["status"]) => void
+  onProgress?: (status: DocumentItem["status"]) => void,
 ): Promise<DocumentItem> {
   const formData = new FormData();
   formData.append("files", file);
@@ -301,13 +345,17 @@ export async function uploadDocument(
 }
 
 export async function getStatus() {
-  const res = await fetch(`${BASE_URL}/status`, { headers: { ...authHeaders() } });
+  const res = await fetch(`${BASE_URL}/status`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error("Failed to fetch status");
   return res.json();
 }
 
 export async function getDocuments(): Promise<DocumentItem[]> {
-  const res = await fetch(`${BASE_URL}/documents`, { headers: { ...authHeaders() } });
+  const res = await fetch(`${BASE_URL}/documents`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error("Failed to fetch documents");
   return res.json();
 }
@@ -322,7 +370,9 @@ export async function getChunks(documentId?: string): Promise<ChunkItem[]> {
 }
 
 export async function getEvaluation(): Promise<EvaluationScores> {
-  const res = await fetch(`${BASE_URL}/evaluation`, { headers: { ...authHeaders() } });
+  const res = await fetch(`${BASE_URL}/evaluation`, {
+    headers: { ...authHeaders() },
+  });
   if (!res.ok) throw new Error("Failed to fetch evaluation");
   return mapEvaluation(await res.json());
 }
