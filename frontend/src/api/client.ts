@@ -10,7 +10,8 @@ import type {
   User,
 } from "@/types";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "/api";
+const API_ROOT = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const BASE_URL = `${API_ROOT}/api`;
 const TOKEN_STORAGE_KEY = "ara_access_token";
 
 export function getToken(): string | null {
