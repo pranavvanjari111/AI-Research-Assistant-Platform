@@ -1,0 +1,95 @@
+# ==========================
+# FastAPI
+# ==========================
+
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
+
+# ==========================
+# Environment
+# ==========================
+
+python-dotenv
+
+# ==========================
+# Validation
+# ==========================
+
+pydantic==2.9.2
+pydantic-settings==2.6.0
+
+# ==========================
+# LangChain
+# ==========================
+
+langchain
+langchain-core
+langchain-community
+langchain-text-splitters
+langchain-openai
+langchain-anthropic
+langchain-google-genai
+langchain-huggingface
+
+# ==========================
+# OpenAI / Google / HF
+# ==========================
+
+openai
+google-generativeai
+transformers
+huggingface-hub
+sentence-transformers
+tiktoken
+
+# ==========================
+# Vector Database
+# ==========================
+
+faiss-cpu
+
+# ==========================
+# Document Loaders
+# ==========================
+
+pypdf
+python-docx
+unstructured
+markdown
+
+# ==========================
+# Machine Learning
+# ==========================
+
+numpy
+scikit-learn
+scipy
+
+# ==========================
+# Database (MongoDB Atlas)
+# ==========================
+
+pymongo[srv]
+
+# ==========================
+# Auth
+# ==========================
+
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+email-validator
+
+# ==========================
+# Utilities
+# ==========================
+
+requests
+tqdm
+
+# ==========================
+# Optional (Useful)
+# ==========================
+
+orjson

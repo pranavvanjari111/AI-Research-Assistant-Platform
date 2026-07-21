@@ -1,0 +1,27 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Backend
+backend/.env
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.venv/
+backend/uploaded_files/
+
+# Python
+*.pyc
+*.pyo
+*.log
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
